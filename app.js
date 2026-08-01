@@ -15,7 +15,7 @@ let filtroCategoriaActual = "";
 window.onload = inicializarSistema;
 
 async function inicializarSistema() {
-const clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     try {
         // 📡 Leemos tus platos directamente desde la nube dinámica de Supabase
         const { data, error } = await clientSupabase
