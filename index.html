@@ -241,7 +241,7 @@
   // Contraseñas oficiales y unificadas de La Aldea
   const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
-  const clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const clientSupabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
  document.getElementById('form-receta').addEventListener('submit', async function(e) {
