@@ -181,6 +181,39 @@
         <button class="btn-volver" onclick="irAlInicio()">← Volver al Catálogo</button>
         <div id="detalle-contenido"></div>
     </div>
+<!-- SISTEMA DE ENVÍO CON MENSAJE PERSONALIZADO Y GIF DE RATATOUILLE -->
+<div id="notificacion-comunitaria" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 3px solid var(--primary); padding: 30px; border-radius: 12px; z-index: 2000; box-shadow: 0px 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 400px; font-family: 'Georgia', serif;">
+  <img src="https://giphy.com" alt="Remy Cocinando" style="width: 100%; max-width: 250px; border-radius: 8px; margin-bottom: 15px;">
+  <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 1.5rem;">¡Oído cocina! 👨‍🍳🔥</h3>
+  <p style="color: var(--text); font-size: 1.1rem; line-height: 1.4;">¡Receta enviada al Almacén con éxito! Pero ojo... la Directora tendrá que catarla primero para comprobar que está de rechupete antes de darle el visto bueno oficial. 😉💻</p>
+  <button onclick="document.getElementById('notificacion-comunitaria').style.display='none';" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">¡Entendido, jefa!</button>
+</div>
+
+<script>
+  document.getElementById('form-receta').addEventListener('submit', function(e) {
+    e.preventDefault(); // Detiene el molesto error 404 de Netlify
+    
+    const formulario = e.target;
+    const datos = new FormData(formulario);
+    
+    fetch('/', {
+      method: 'POST',
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(datos).toString()
+    })
+    .then(() => {
+      formulario.reset(); // Vacía los campos para que quede limpio
+      cerrarFormulario(); // Cierra la ventana de añadir receta
+      
+      // Abre el cartel flotante con nuestro mensaje y el GIF
+      document.getElementById('notificacion-comunitaria').style.display = 'block';
+    })
+    .catch((error) => {
+      alert('Vaya, hubo un problema técnico en los fogones. Inténtalo de nuevo.');
+      console.error(error);
+    });
+  });
+</script>
 
     <script src="app.js"></script>
 </body>
