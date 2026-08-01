@@ -1,6 +1,10 @@
 // =========================================================================
 // 🧠 CEREBRO CENTRAL DE "OIDO COCINA" - BLOQUE 1 (ARRANQUE Y BASE DE DATOS)
 // =========================================================================
+// Enchufe unificado en la cocina general
+const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
+const clientSupabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let baseDatos = { recetas: [] };
 let paginaActual = 1;
