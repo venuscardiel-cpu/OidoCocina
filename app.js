@@ -4,7 +4,6 @@
 // Enchufe unificado en la cocina general
 const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
-const clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let baseDatos = { recetas: [] };
 let paginaActual = 1;
@@ -17,7 +16,7 @@ window.onload = inicializarSistema;
 
 async function inicializarSistema() {
         await new Promise(resolve => setTimeout(resolve, 300));
-
+const clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     try {
         // 📡 Leemos tus platos directamente desde la nube dinámica de Supabase
         const { data, error } = await clientSupabase
