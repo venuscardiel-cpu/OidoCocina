@@ -14,7 +14,7 @@ window.onload = inicializarSistema;
 async function inicializarSistema() {
     try {
         // 📡 Leemos tus platos directamente desde la nube dinámica de Supabase
-        const { data, error } = await supabase
+        const { data, error } = await clientSupabase
             .from('recetas_aldea')
             .select('*');
 
