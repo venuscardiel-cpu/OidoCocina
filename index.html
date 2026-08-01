@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>#OidoCocina - El Recetario de La Aldea</title>
+<script>
+  const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
+  const clientSupabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+   
     <style>
         :root { 
             --bg: #f5f2eb; 
@@ -239,10 +245,6 @@
 </div>
 <script>
   // Contraseñas oficiales y unificadas de La Aldea
-  const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
-  const clientSupabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 
  document.getElementById('form-receta').addEventListener('submit', async function(e) {
   e.preventDefault(); // Detiene el error 404 de Netlify
