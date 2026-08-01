@@ -1,312 +1,283 @@
-let baseDatos = { ingredientes_nevera: [], recetas: [] };
+// =========================================================================
+// 🧠 CEREBRO CENTRAL DE "OIDO COCINA" - BLOQUE 1 (ARRANQUE Y BASE DE DATOS)
+// =========================================================================
+
+let baseDatos = { recetas: [] };
 let paginaActual = 1;
-const itemsPorPagina = 12;
+const recetasPorPagina = 12;
+let filtroAutorActual = "";
+let filtroCategoriaActual = "";
 
-// Almacenes globales para los estados de los motores rápidos
-let filtroBotonActivo = { tipo: null, valor: null };
-let filtroVecinoActivo = "";
-
-const limpiarTexto = (texto) => {
-    return texto ? texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-};
+// 📡 CONFIGURACIÓN DE INICIO
+window.onload = inicializarSistema;
 
 async function inicializarSistema() {
     try {
-        const respuesta = await fetch('recetas.json');
-        baseDatos = await respuesta.json();
-    } catch (e) {
-        console.log("Modo local de contingencia activo.");
-        baseDatos = {
-            ingredientes_nevera: ["Aceite", "Ajo", "Arroz", "Azúcar", "Berenjena", "Calabacín", "Cebolla", "Chocolate", "Harina", "Huevo", "Leche", "Limón", "Mantequilla", "Nata", "Pan", "Patata", "Pera", "Pescado", "Pimiento", "Pollo", "Puerro", "Queso", "Sal", "Tomate", "Vinagre", "Yogur", "Zanahoria", "Zumo", "Miel"],
-            recetas: [] // ¡Limpiado a cero! Solo saldrá lo que pongas en el recetas.json
+        // 📡 Leemos tus platos directamente desde la nube dinámica de Supabase
+        const { data, error } = await supabase
+            .from('recetas_aldea')
+            .select('*');
+
+        if (error) throw error;
+
+        // Metemos los platos en la memoria del programa (por defecto vienen aprobados = true tras el filtro de Supabase)
+        baseDatos = { recetas: data || [] };
+
+        // Ordenamos las recetas para que las últimas que añadas salgan primero
+        if (baseDatos && baseDatos.recetas) {
+            baseDatos.recetas.sort((a, b) => b.id - a.id);
+        }
+
+        // Encendemos los motores visuales de la pantalla
+        actualizarSelectorVecinos();
+        filtrarYMostrarRecetas();
+        configurarBuscadorUnificado();
+    } catch (error) {
+        console.error("Error crítico: No se ha podido leer la base de datos de Supabase", error);
+    }
+}
+
+// 🔍 2. MAQUINARIA UNIFICADA DEL BUSCADOR (CON ADUANA DE MEMORIA)
+function configurarBuscadorUnificado() {
+    const cajaBusqueda = document.getElementById('motor-busqueda');
+    const botonBuscarManual = document.getElementById('btn-buscar-manual');
+
+    function ejecutarFiltro() {
+        paginaActual = 1; // Reiniciamos siempre a la página 1 para evitar bucles
+        filtrarYMostrarRecetas();
+    }
+
+    if (cajaBusqueda) {
+        cajaBusqueda.addEventListener('input', ejecutarFiltro);
+    }
+    if (botonBuscarManual) {
+        botonBuscarManual.addEventListener('click', ejecutarFiltro);
+    }
+}
+
+// 🧮 3. MOTOR DE FILTRADO CRUZADO GENERAL
+function filtrarYMostrarRecetas() {
+    const textoBusqueda = document.getElementById('motor-busqueda')?.value.toLowerCase().trim() || "";
+    
+    // Filtramos la base de datos combinando buscador + botones + vecinos
+    const recetasFiltradas = baseDatos.recetas.filter(receta => {
+        const coincideBuscador = !textoBusqueda || 
+            receta.titulo.toLowerCase().includes(textoBusqueda) ||
+            receta.autor.toLowerCase().includes(textoBusqueda) ||
+            receta.ingredientes.some(ing => ing.toLowerCase().includes(textoBusqueda));
+            
+        const coincideAutor = !filtroAutorActual || receta.autor === filtroAutorActual;
+        const coincideCategoria = !filtroCategoriaActual || receta.categoria === filtroCategoriaActual;
+        
+        return coincideBuscador && coincideAutor && coincideCategoria;
+    });
+
+    renderizarCatalogo(recetasFiltradas);
+    renderizarPaginador(recetasFiltradas.length);
+}
+// 🎨 4. PINTAR LAS TARJETAS EN LA PÁGINA ACTUAL
+function renderizarCatalogo(listaRecetas) {
+    const contenedor = document.getElementById('recetas-display');
+    if (!contenedor) return;
+    contenedor.innerHTML = "";
+
+    if (listaRecetas.length === 0) {
+        contenedor.innerHTML = `<div class="sin-resultados">❌ No constan platos en los registros con esos filtros en La Aldea.</div>`;
+        return;
+    }
+
+    // Cortamos la tarta en trozos de 12 recetas por página
+    const indiceInicio = (paginaActual - 1) * recetasPorPagina;
+    const indiceFin = indiceInicio + recetasPorPagina;
+    const recetasPagina = listaRecetas.slice(indiceInicio, indiceFin);
+
+    recetasPagina.forEach(receta => {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'tarjeta-receta';
+        tarjeta.onclick = () => mostrarFichaRecetaUnica(receta.id);
+        
+        // Creamos la tira de ingredientes grises de fondo
+    const listaIngredientes = Array.isArray(receta.ingredientes) ? receta.ingredientes : (typeof receta.ingredientes === 'string' ? receta.ingredientes.split(',').map(i => i.trim()) : []);
+    const etiquetasIngredientes = listaIngredientes.map(ing => `<span class="badge-ingrediente">${ing}</span>`).join('');
+
+        tarjeta.innerHTML = `
+            <div class="tarjeta-cabecera">
+                <span class="badge-categoria">${receta.categoria}</span>
+                <h3>${receta.titulo}</h3>
+                <p class="autor-firma">Compartida por: <strong>${receta.autor}</strong></p>
+            </div>
+            <div class="tarjeta-meta">
+                <span>⏱️ ${receta.tiempo} min</span>
+                <span>👥 ${receta.raciones} rac.</span>
+                <span>📊 ${receta.dificultad}</span>
+            </div>
+            <div class="tarjeta-ingredientes-previo">
+                ${etiquetasIngredientes}
+            </div>
+        `;
+        contenedor.appendChild(tarjeta);
+    });
+}
+
+// 🔢 5. PINTAR EL PAGINADOR DE 13 PÁGINAS (SIN DUPLICADOS)
+function renderizarPaginador(totalElementos) {
+    const contenedorPaginador = document.getElementById('paginacion-controles');
+    if (!contenedorPaginador) return;
+    contenedorPaginador.innerHTML = "";
+
+    const totalPaginas = Math.ceil(totalElementos / recetasPorPagina);
+    if (totalPaginas <= 1) return; // Si solo hay una página, escondemos los números
+
+    for (let i = 1; i <= totalPaginas; i++) {
+        const botonPagina = document.createElement('button');
+        botonPagina.innerText = i;
+        botonPagina.className = (i === paginaActual) ? 'btn-paginador activo' : 'btn-paginador';
+        botonPagina.onclick = (e) => {
+            e.stopPropagation();
+            paginaActual = i;
+            filtrarYMostrarRecetas();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
-    }
-    baseDatos.ingredientes_nevera.sort((a, b) => a.localeCompare('es'));
-    renderizarNevera();
-    actualizarSelectorVecinos();
-    comprobarRutaNavegacion();
-}
-
-function comprobarRutaNavegacion() {
-    const parametros = new URLSearchParams(window.location.search);
-    const idReceta = parametros.get('id');
-    if (idReceta) {
-        mostrarFichaRecetaUnica(parseInt(idReceta));
-    } else {
-        mostrarCatalogoGeneral();
+        contenedorPaginador.appendChild(botonPagina);
     }
 }
+// 📂 6. APERTURA DE FICHA COMPLETA (EL SISTEMA SE OLVIDA DE LA PATATA)
+function mostrarFichaRecetaUnica(id) {
+    const receta = baseDatos.recetas.find(r => r.id === id);
+    if (!receta) return;
 
+    // 🔒 LA ADUANA DE MEMORIA: Vaciamos el buscador al hacer clic
+    const cajaBusqueda = document.getElementById('motor-busqueda');
+    if (cajaBusqueda) {
+        cajaBusqueda.value = ""; 
+    }
+    paginaActual = 1;
+    filtroAutorActual = "";
+    filtroCategoriaActual = "";
+    filtrarYMostrarRecetas(); // Dejamos el catálogo limpio de fondo con sus 157 platos
+
+    // Ocultamos físicamente la sección del buscador y los filtros de la pantalla
+    const seccionMotores = document.querySelector('.seccion-motores');
+    if (seccionMotores) seccionMotores.style.display = 'none';
+    
+    // Escáner masivo: apagamos los 3 bloques de filtros superiores
+    const todosLosFiltros = document.querySelectorAll('.bloque-filtros');
+    todosLosFiltros.forEach(bloque => bloque.style.display = 'none');
+
+
+    // Intercambiamos los paneles visuales
+    document.getElementById('modulo-principal').style.display = 'none';
+    const panelDetalle = document.getElementById('modulo-detalle');
+    panelDetalle.style.display = 'block';
+
+    const cajaContenido = document.getElementById('detalle-contenido');
+    const listaIngredientes = receta.ingredientes.map(ing => `<li>• ${ing}</li>`).join('');
+
+    cajaContenido.innerHTML = `
+        <div class="vista-detalle">
+            <button class="btn-volver" onclick="mostrarCatalogoGeneral()">⬅️ Volver al Catálogo</button>
+            <h2>${receta.titulo}</h2>
+            <p class="detalle-autor">Receta de la comunidad compartida por: <strong>${receta.autor}</strong></p>
+            
+            <div class="detalle-meta-bloque">
+                <span>⏱️ <strong>Tiempo:</strong> ${receta.tiempo} minutos</span>
+                <span>👥 <strong>Raciones:</strong> ${receta.raciones}</span>
+                <span>📊 <strong>Dificultad:</strong> ${receta.dificultad}</span>
+            </div>
+
+            <div class="detalle-cuerpo">
+                <div class="detalle-ingredientes">
+                    <h4>🛒 Ingredientes necesarios:</h4>
+                    <ul>${listaIngredientes}</ul>
+                </div>
+                <div class="detalle-pasos">
+                    <h4>🍳 Elaboración paso a paso:</h4>
+                    <p style="white-space: pre-line;">${receta.pasos}</p>
+                </div>
+            </div>
+        </div>
+    `;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 🔙 7. REGRESAR AL CATÁLOGO (RECUPERANDO EL BUSCADOR LIMPIO)
 function mostrarCatalogoGeneral() {
     document.getElementById('modulo-detalle').style.display = 'none';
     document.getElementById('modulo-principal').style.display = 'block';
-    filtrarYMostrarRecetas();
+
+    // Volvemos a encender el buscador y los filtros en la pantalla
+    const seccionMotores = document.querySelector('.seccion-motores');
+    if (seccionMotores) seccionMotores.style.display = 'block';
+    const bloqueFiltros = document.querySelector('.bloque-filtros');
+    if (bloqueFiltros) bloqueFiltros.style.display = 'block';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function verDetalleReceta(id) {
-    window.history.pushState({}, '', `?id=${id}`);
-    mostrarFichaRecetaUnica(id);
+// 🎭 8. FILTROS RÁPIDOS POR BOTÓN (CATEGORÍAS Y VECINOS)
+function filtrarPorBoton(campo, valor) {
+    if (campo === 'categoria') {
+        filtroCategoriaActual = (filtroCategoriaActual === valor) ? "" : valor;
+    }
+    paginaActual = 1;
+    filtrarYMostrarRecetas();
+    actualizarEstilosBotonesFiltro();
+}
+
+function filtrarPorVecino(nombreVecino) {
+    filtroAutorActual = nombreVecino;
+    paginaActual = 1;
+    filtrarYMostrarRecetas();
 }
 
 function irAlInicio() {
-    window.history.pushState({}, '', window.location.pathname);
+    const cajaBusqueda = document.getElementById('motor-busqueda');
+    if (cajaBusqueda) cajaBusqueda.value = "";
+    filtroAutorActual = "";
+    filtroCategoriaActual = "";
+    paginaActual = 1;
+    filtrarYMostrarRecetas();
     mostrarCatalogoGeneral();
 }
 
-function mostrarFichaRecetaUnica(id) {
-    const receta = baseDatos.recetas.find(r => r.id === id);
-    const contenedorPrincipal = document.getElementById('modulo-principal');
-    const contenedorDetalle = document.getElementById('modulo-detalle');
-    const cajaContenido = document.getElementById('detalle-contenido');
-
-    if (!receta) {
-        cajaContenido.innerHTML = `<h3>⚠️ Error operativos: El plato no consta en los registros.</h3>`;
-        contenedorPrincipal.style.display = 'none';
-        contenedorDetalle.style.display = 'block';
-        return;
-    }
-
-    contenedorPrincipal.style.display = 'none';
-    contenedorDetalle.style.display = 'block';
-
-    cajaContenido.innerHTML = `
-        <h2 style="color: var(--primary); font-family: inherit;">${receta.titulo}</h2>
-                <p class="autor" style="font-size: 1.1em; margin-bottom: 20px;">
-                    Receta compartida por: 
-                    <strong class="clicable" onclick="buscarPorAutorCruzado('${receta.autor}')" style="cursor: pointer; color: var(--primary); text-decoration: underline;">
-                        ${receta.autor} 🔍
-                    </strong>
-                </p>
-        <div class="meta-datos" style="margin: 15px 0;">
-            <span class="badge categoria" style="font-size: 0.9em; padding: 5px 12px;">📁 ${receta.categoria || 'Plato'}</span>
-            <span class="badge" style="font-size: 0.9em; padding: 5px 12px;">⏱️ ${receta.tiempo || '--'} min</span>
-            <span class="badge" style="font-size: 0.9em; padding: 5px 12px;">👥 ${receta.raciones || '--'} raciones</span>
-            <span class="badge" style="font-size: 0.9em; padding: 5px 12px;">📊 Dificultad: ${receta.dificultad || 'Media'}</span>
-        </div>
-        <h3 style="font-family: system-ui, sans-serif; font-size: 1.1em; color: #7a7167; text-transform: uppercase;">Ingredientes (Pincha uno para buscar platos relacionados):</h3>
-        <div class="tags" style="margin-bottom: 25px;">
-            ${receta.ingredientes.map(i => `
-                <span class="tag clicable" onclick="buscarPorIngredienteCruzado('${i}')" style="font-size: 0.95em; padding: 5px 14px; margin-bottom: 5px;">
-                    ${i} 🔍
-                </span>
-            `).join('')}
-        </div>
-        <h3 style="font-family: system-ui, sans-serif; font-size: 1.1em; color: #7a7167; text-transform: uppercase;">Modo de preparación paso a paso:</h3>
-        <div class="pasos-caja">${receta.pasos.replace(/\n/g, '<br>')}</div>
-    `;
-    window.scrollTo(0, 0);
-}
-
-function buscarPorIngredienteCruzado(ingrediente) {
-    irAlInicio();
-    document.getElementById('motor-busqueda').value = ingrediente;
-    filtrarYMostrarRecetas();
-}
-function renderizarNevera() {
-    const contenedor = document.getElementById('contenedor-ingredientes');
-    if (!contenedor) return;
-    contenedor.innerHTML = '';
-    baseDatos.ingredientes_nevera.forEach(ing => {
-        const div = document.createElement('div');
-        div.className = 'checkbox-item';
-        div.innerHTML = `<label><input type="checkbox" value="${ing}" onchange="filtrarYMostrarRecetas()"> ${ing}</label>`;
-        contenedor.appendChild(div);
-    });
-}
-
+// 👥 9. ACTUALIZAR EL SELECTOR DINÁMICO DE VECINOS
 function actualizarSelectorVecinos() {
     const selector = document.getElementById('selector-autor');
     if (!selector) return;
-    const autores = [...new Set(baseDatos.recetas.map(r => r.autor))].sort();
-    selector.innerHTML = '<option value="">📋 Ver todas las autorías...</option>';
+    
+    // Extraemos los autores únicos de las recetas
+    const autores = [...new Set(baseDatos.recetas.map(r => r.author || r.autor).filter(Boolean))];
+    autores.sort();
+
+    selector.innerHTML = `<option value="">👥 Filtrar por vecino cocinero...</option>`;
     autores.forEach(autor => {
-        const opt = document.createElement('option');
-        opt.value = autor;
-        opt.textContent = autor;
-        selector.appendChild(opt);
+        const opcion = document.createElement('option');
+        opcion.value = autor;
+        opcion.innerText = autor;
+        selector.appendChild(opcion);
     });
+
+    selector.onchange = (e) => filtrarPorVecino(e.target.value);
 }
 
-function filtrarPorBoton(tipo, valor) {
-    const botones = document.querySelectorAll('.btn-filto:not(.btn-reset)');
-    botones.forEach(b => b.classList.remove('activo'));
-    if (filtroBotonActivo.tipo === tipo && filtroBotonActivo.valor === valor) {
-        filtroBotonActivo = { tipo: null, valor: null };
-    } else {
-        filtroBotonActivo = { tipo: tipo, valor: valor };
-        const btnPinchado = Array.from(botones).find(b => b.textContent.includes(valor) || (valor === 'exprés' && b.textContent.includes('Exprés')) || (valor === 'lento' && b.textContent.includes('Fuego Lento')));
-        if (btnPinchado) btnPinchado.classList.add('activo');
-    }
-    paginaActual = 1;
-    filtrarYMostrarRecetas();
-}
-
-function filtrarPorVecino(autor) {
-    filtroVecinoActivo = autor;
-    paginaActual = 1;
-    filtrarYMostrarRecetas();
-}
-
-function limpiarTodosLosFiltros() {
-    document.getElementById('motor-busqueda').value = "";
-    const checkboxes = document.querySelectorAll('#contenedor-ingredientes input');
-    checkboxes.forEach(cb => cb.checked = false);
-    const selector = document.getElementById('selector-autor');
-    if (selector) selector.value = "";
-    filtroBotonActivo = { tipo: null, valor: null };
-    filtroVecinoActivo = "";
-    const botones = document.querySelectorAll('.btn-filto');
-    botones.forEach(b => b.classList.remove('activo'));
-    paginaActual = 1;
-    filtrarYMostrarRecetas();
-}
-
-function filtrarYMostrarRecetas() {
-    const textoBusqueda = limpiarTexto(document.getElementById('motor-busqueda').value);
-    const checkboxes = document.querySelectorAll('#contenedor-ingredientes input:checked');
-    const ingredientesBuscados = Array.from(checkboxes).map(cb => cb.value);
-
-    const recetasFiltradas = baseDatos.recetas.filter(receta => {
-        const enTitulo = limpiarTexto(receta.titulo).includes(textoBusqueda);
-        const enAutor = limpiarTexto(receta.autor).includes(textoBusqueda);
-        const enCategoria = limpiarTexto(receta.categoria || "").includes(textoBusqueda);
-        const enIngredientes = receta.ingredientes.some(ing => limpiarTexto(ing).includes(textoBusqueda));
-        const pasaTexto = enTitulo || enAutor || enIngredientes || enCategoria;
-
-        const pasaNevera = ingredientesBuscados.length === 0 || 
-            ingredientesBuscados.every(ing => receta.ingredientes.includes(ing));
-
-        const pasaVecino = !filtroVecinoActivo || receta.autor === filtroVecinoActivo;
-
-        let pasaBotones = true;
-        if (filtroBotonActivo.tipo === 'categoria') {
-            pasaBotones = receta.categoria === filtroBotonActivo.valor;
-        } else if (filtroBotonActivo.tipo === 'dificultad') {
-            pasaBotones = receta.dificultad === filtroBotonActivo.valor;
-        } else if (filtroBotonActivo.tipo === 'tiempo') {
-            const minutos = parseInt(receta.tiempo) || 0;
-            if (filtroBotonActivo.valor === 'exprés') pasaBotones = minutos <= 30;
-            if (filtroBotonActivo.valor === 'lento') pasaBotones = minutos >= 60;
+function actualizarEstilosBotonesFiltro() {
+    const botones = document.querySelectorAll('.btn-filtro');
+    botones.forEach(btn => {
+        if (btn.innerText.includes(filtroCategoriaActual) && filtroCategoriaActual !== "") {
+            btn.classList.add('activo');
+        } else {
+            btn.classList.remove('activo');
         }
-
-        return pasaTexto && pasaNevera && pasaVecino && pasaBotones;
     });
-
-    const totalItems = recetasFiltradas.length;
-    const totalPaginas = Math.ceil(totalItems / itemsPorPagina) || 1;
-    if (paginaActual > totalPaginas) paginaActual = totalPaginas;
-
-    const inicio = (paginaActual - 1) * itemsPorPagina;
-    const fin = inicio + itemsPorPagina;
-    const itemsPagina = recetasFiltradas.slice(inicio, fin);
-
-    const contenedorRecetas = document.getElementById('recetas-display');
-    if (!contenedorRecetas) return;
-    contenedorRecetas.innerHTML = '';
-
-    if(itemsPagina.length === 0) {
-        contenedorRecetas.innerHTML = '<p style="font-style: italic; color: #7a7167; grid-column: 1/-1; text-align: center; margin-top: 20px;">No constan platos en La Aldea con los criterios combinados.</p>';
-    } else {
-        itemsPagina.forEach(receta => {
-            const card = document.createElement('div');
-            card.className = 'receta-card';
-            card.innerHTML = `
-                <div>
-                    <h3 style="cursor: pointer; color: var(--primary);" 
-                        onclick="verDetalleReceta(${receta.id})" 
-                        onmouseover="this.style.textDecoration='underline'" 
-                        onmouseout="this.style.textDecoration='none'">
-                        ${receta.titulo}
-                    </h3>
-                    <p class="autor">Por: ${receta.autor}</p>
-                    <div class="meta-datos">
-                        <span class="badge categoria">${receta.categoria || 'Plato'}</span>
-                        <span class="badge">⏱️ ${receta.tiempo || '--'} min</span>
-                        <span class="badge">👥 ${receta.raciones || '--'} raciones</span>
-                        <span class="badge">📊 ${receta.dificultad || 'Media'}</span>
-                    </div>
-                    <div class="tags">${receta.ingredientes.map(i => `<span class="tag">${i}</span>`).join('')}</div>
-                </div>
-                <button class="btn-ver" onclick="verDetalleReceta(${receta.id})">Ver Receta Completa →</button>
-            `;
-            contenedorRecetas.appendChild(card);
-        });
-    }
-
-    const contenedorPaginacion = document.getElementById('paginacion-controles');
-    if (!contenedorPaginacion) return;
-    contenedorPaginacion.innerHTML = '';
-    for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.innerText = i;
-        if (i === paginaActual) btn.style.background = '#b85a38';
-        btn.addEventListener('click', () => {
-            paginaActual = i;
-            filtrarYMostrarRecetas();
-        });
-        contenedorPaginacion.appendChild(btn);
-    }
 }
 
-document.getElementById('form-receta').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const titulo = document.getElementById('titulo').value.trim();
-    const autor = document.getElementById('autor').value.trim();
-    const categoria = document.getElementById('categoria').value;
-    const tiempo = document.getElementById('tiempo').value;
-    const raciones = document.getElementById('raciones').value;
-    const difica = document.getElementById('dificultad').value;
-    const pasos = document.getElementById('pasos').value.trim();
-    
-    const checkboxes = document.querySelectorAll('#contenedor-ingredientes input:checked');
-    const ingredientesSeleccionados = Array.from(checkboxes).map(cb => cb.value);
-
-    if (ingredientesSeleccionados.length === 0) {
-        alert("¡Error operativo! Debes seleccionar al menos un ingrediente de la nevera.");
-        return;
-    }
-
-    const nuevaReceta = {
-        id: Date.now(),
-        titulo: titulo,
-        autor: autor,
-        categoria: categoria,
-        tiempo: tiempo,
-        raciones: raciones,
-        dificultad: difica,
-        ingredientes: ingredientesSeleccionados,
-        pasos: pasos
-    };
-
-    baseDatos.recetas.unshift(nuevaReceta);
-    this.reset();
-    paginaActual = 1;
-    cerrarFormulario();
-    actualizarSelectorVecinos();
-    filtrarYMostrarRecetas();
-    alert("📡 Plato enviado con éxito de forma autónoma. Sincronizando en la red de La Aldea.");
-});
-
-document.getElementById('motor-busqueda').addEventListener('keyup', () => {
-    paginaActual = 1;
-    filtrarYMostrarRecetas();
-});
-
-window.addEventListener('popstate', comprobarRutaNavegacion);
-
+// 📦 10. ENVÍO AUTÓNOMO DE NUEVAS RECETAS DESDE LA WEB
 function abrirFormulario() {
-    document.getElementById('modal-subida').style.display = 'block';
+    const modal = document.getElementById('modal-receta');
+    if (modal) modal.style.display = 'block';
 }
 
 function cerrarFormulario() {
-    document.getElementById('modal-subida').style.display = 'none';
-}
-
-window.onload = inicializarSistema;
-function buscarPorAutorCruzado(autor) {
-    irAlInicio();
-    filtrarPorVecino(autor);
-    const selector = document.getElementById('selector-autor');
-    if (selector) selector.value = autor;
+    const modal = document.getElementById('modal-receta');
+    if (modal) modal.style.display = 'none';
 }

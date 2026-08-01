@@ -95,7 +95,17 @@
 
         /* Modales Formularios */
         .modal-formulario { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
-        .modal-content { background: white; width: 90%; max-width: 550px; margin: 50px auto; padding: 30px; border-radius: 8px; }
+        .modal-content {
+            background: white;
+            width: 92%;
+            max-width: 550px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 85vh;
+            overflow-y: auto;
+}
+
         .cerrar-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5em; cursor: pointer; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-family: system-ui, sans-serif; }
@@ -173,7 +183,8 @@
             <span class="cerrar-modal" onclick="cerrarFormulario()">&times;</span>
             <h2 style="color: var(--accent); margin-bottom: 20px;">Subir Nueva Receta Universal</h2>
             
-            <form id="form-receta" name="recetas-nuevas" method="POST" data-netlify="true">
+            <form id="form-receta" name="recetas-nuevas">
+
                 <div class="form-group">
                     <label for="titulo">Nombre del Plato:</label>
                     <input type="text" id="titulo" name="titulo" required placeholder="Ej. Sopa de Ajo Tradicional">
@@ -220,49 +231,50 @@
             </form>
         </div>
     </div>
-
-<!-- ENCHUFE OFICIAL DE SUPABASE -->
-<script src="supabase.js"></script>
-
+<!-- SISTEMA DE ENVÍO CON MENSAJE PERSONALIZADO Y GIF DE RATATOUILLE -->
+<div id="notificacion-comunitaria" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 3px solid var(--primary); padding: 30px; border-radius: 12px; z-index: 2000; box-shadow: 0px 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 400px; font-family: 'Georgia', serif;">
+  <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 1.5rem;">¡Oído cocina! 👨‍🍳🔥</h3>
+  <p style="color: var(--text); font-size: 1.1rem; line-height: 1.4;">¡Receta enviada al Almacén con éxito! Pero ojo... la Directora tendrá que catarla primero para comprobar que está de rechupete antes de darle el visto bueno oficial. 😉💻</p>
+  <button onclick="document.getElementById('notificacion-comunitaria').style.display='none';" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">¡Entendido, jefa!</button>
+</div>
 <script>
-const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQ0PE';
-const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- Enchufe de Supabase y Scripts de Configuración -->
+<script src="supabase.js"></script>
+<script>
+  const SUPABASE_URL = 'https://supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+
+ document.getElementById('form-receta').addEventListener('submit', async function(e) {
+  e.preventDefault(); // Detiene el error 404 de Netlify
+  
+  const formulario = e.target;
+  const datos = new FormData(formulario);
+  
+  // 1. Recogemos los datos de los campos para el almacén de Supabase
+  const nuevaReceta = {
+    titulo: formulario.elements['titulo']?.value || formulario.querySelector('[name="titulo"]')?.value,
+    ingredientes: formulario.elements['ingredientes']?.value || formulario.querySelector('[name="ingredientes"]')?.value,
+    pasos: formulario.elements['pasos']?.value || formulario.querySelector('[name="pasos"]')?.value,
+    autor: formulario.elements['autor']?.value || formulario.querySelector('[name="autor"]')?.value
+  };
+
+  try {
+    // 2. ENCHUFE DE SUPABASE: Guardamos la receta de forma directa
+    await supabase.from('recetas_aldea').insert([nuevaReceta]);
+    
+    // 4. ÉXITO: Vaciamos formulario, cerramos ventana y abrimos tu cartel limpio
+    formulario.reset();
+    cerrarFormulario();
+    document.getElementById('notificacion-comunitaria').style.display = 'block';
+
+  } catch (error) {
+    alert('Vaya, hubo un problema técnico en los fogones. Inténtalo de nuevo.');
+    console.error('Error de Supabase:', error);
+  }
 </script>
 
 <script src="app.js"></script>
 </body>
 </html>
-<!-- SISTEMA DE ENVÍO CON MENSAJE PERSONALIZADO Y GIF DE RATATOUILLE -->
-<div id="notificacion-comunitaria" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 3px solid var(--primary); padding: 30px; border-radius: 12px; z-index: 2000; box-shadow: 0px 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 400px; font-family: 'Georgia', serif;">
-  <img src="https://giphy.com" alt="Remy Cocinando" style="width: 100%; max-width: 250px; border-radius: 8px; margin-bottom: 15px;">
-  <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 1.5rem;">¡Oído cocina! 👨‍🍳🔥</h3>
-  <p style="color: var(--text); font-size: 1.1rem; line-height: 1.4;">¡Receta enviada al Almacén con éxito! Pero ojo... la Directora tendrá que catarla primero para comprobar que está de rechupete antes de darle el visto bueno oficial. 😉💻</p>
-  <button onclick="document.getElementById('notificacion-comunitaria').style.display='none';" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">¡Entendido, jefa!</button>
-</div>
-
-<script>
-  document.getElementById('form-receta').addEventListener('submit', function(e) {
-    e.preventDefault(); // Detiene el molesto error 404 de Netlify
-    
-    const formulario = e.target;
-    const datos = new FormData(formulario);
-    
-    fetch('/', {
-      method: 'POST',
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(datos).toString()
-    })
-    .then(() => {
-      formulario.reset(); // Vacía los campos para que quede limpio
-      cerrarFormulario(); // Cierra la ventana de añadir receta
-      
-      // Abre el cartel flotante con nuestro mensaje y el GIF
-      document.getElementById('notificacion-comunitaria').style.display = 'block';
-    })
-    .catch((error) => {
-      alert('Vaya, hubo un problema técnico en los fogones. Inténtalo de nuevo.');
-      console.error(error);
-    });
-  });
-</script>
