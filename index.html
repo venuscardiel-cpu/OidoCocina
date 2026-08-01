@@ -238,13 +238,11 @@
   <button onclick="document.getElementById('notificacion-comunitaria').style.display='none';" style="background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px;">¡Entendido, jefa!</button>
 </div>
 <script>
-    <!-- Enchufe de Supabase y Scripts de Configuración -->
-<script src="supabase.js"></script>
-<script>
-  const SUPABASE_URL = 'https://supabase.co';
+  // Contraseñas oficiales y unificadas de La Aldea
+  const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
   const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-</script>
+
 
  document.getElementById('form-receta').addEventListener('submit', async function(e) {
   e.preventDefault(); // Detiene el error 404 de Netlify
