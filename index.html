@@ -241,7 +241,7 @@
   // Contraseñas oficiales y unificadas de La Aldea
   const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQOPE';
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const clientSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
  document.getElementById('form-receta').addEventListener('submit', async function(e) {
@@ -260,7 +260,7 @@
 
   try {
     // 2. ENCHUFE DE SUPABASE: Guardamos la receta de forma directa
-    await supabase.from('recetas_aldea').insert([nuevaReceta]);
+    await clientSupabase.from('recetas_aldea').insert([nuevaReceta]);
     
     // 4. ÉXITO: Vaciamos formulario, cerramos ventana y abrimos tu cartel limpio
     formulario.reset();
