@@ -264,7 +264,7 @@
 
   try {
     // 2. ENCHUFE DE SUPABASE: Guardamos la receta de forma directa
-    await clientSupabase.from('recetas_aldea').insert([nuevaReceta]);
+    await clientSupabase.from('recetas_aldea').insert(nuevaReceta);
     
     // 4. ÉXITO: Vaciamos formulario, cerramos ventana y abrimos tu cartel limpio
     formulario.reset();
