@@ -250,6 +250,7 @@
   
   // 1. Recogemos los datos de los campos para el almacén de Supabase
   const nuevaReceta = {
+    id: Math.floor(10000000 + Math.random() * 90000000),
     titulo: formulario.elements['titulo']?.value || formulario.querySelector('[name="titulo"]')?.value,
     ingredientes: formulario.elements['ingredientes']?.value || formulario.querySelector('[name="ingredientes"]')?.value,
     pasos: formulario.elements['pasos']?.value || formulario.querySelector('[name="pasos"]')?.value,
