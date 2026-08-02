@@ -3,7 +3,7 @@
 // =========================================================================
 // Enchufe unificado en la cocina general
 const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
-const SUPABASE_KEY='sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQ0PE';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnbm9pbHVjZWZzbGlleXh4amRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTU5Nzk3NDcsImV4cCI6MjAzMTU1NTc0N30.Z-X67rZk8ZIdfC7O6P7O6P7O6P7O6P7O6P7O6P7O6P7O';
 
 let baseDatos = { recetas: [] };
 let paginaActual = 1;
