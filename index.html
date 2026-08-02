@@ -112,6 +112,24 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-family: system-ui, sans-serif; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 4px; box-sizing: border-box; }
+        @media (max-width: 768px) {
+    .container, .main-content, .dashboard {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+    .search-box, #form-receta, .receta-card {
+        width: 100% !important;
+        box-sizing: border-box;
+        margin: 10px 0 !important;
+    }
+    .search-box input, .search-box button {
+        width: 100% !important;
+        height: 45px;
+    }
+}
+
     </style>
 </head>
 <body>
