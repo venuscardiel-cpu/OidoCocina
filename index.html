@@ -253,7 +253,13 @@
     titulo: formulario.elements['titulo']?.value || formulario.querySelector('[name="titulo"]')?.value,
     ingredientes: formulario.elements['ingredientes']?.value || formulario.querySelector('[name="ingredientes"]')?.value,
     pasos: formulario.elements['pasos']?.value || formulario.querySelector('[name="pasos"]')?.value,
-    autor: formulario.elements['autor']?.value || formulario.querySelector('[name="autor"]')?.value
+    autor: formulario.elements['autor']?.value || formulario.querySelector('[name="autor"]')?.value,
+    categoria: formulario.elements['categoria']?.value || formulario.querySelector('[name="categoria"]')?.value || 'Plato Principal',
+    tiempo: parseInt(formulario.elements['tiempo']?.value || formulario.querySelector('[name="tiempo"]')?.value || '45'),
+    raciones: parseInt(formulario.elements['raciones']?.value || formulario.querySelector('[name="raciones"]')?.value || '4'),
+    dificultad: formulario.elements['dificultad']?.value || formulario.querySelector('[name="dificultad"]')?.value || 'Fácil',
+    estacional: formulario.elements['estacional']?.value || formulario.querySelector('[name="estacional"]')?.value || 'Todo el año'
+
   };
 
   try {
