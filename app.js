@@ -2,7 +2,7 @@
 // 1. CEREBRO CENTRAL DE "OÍDO COCINA" - BLOQUE 1 (ARRANQUE Y BASE DE DATOS)
 // ==========================================
 const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_LEomAh36WhFioDvPtPXKPA_EoWqQ0PE';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnbm9pbHVjZWZzbGlleXh4amRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1MTEyMDcsImV4cCI6MjEwMTA4NzIwN30.YYBhp4DA_slA4XIUV4_nstcUV8fdrlMYXzluDuvbEW4';
 
 // La aduana o lavadora de texto para evitar inyecciones maliciosas (XSS)
 function limpiarTexto(texto) {
