@@ -1,7 +1,7 @@
 // ==========================================
 // 1. CEREBRO CENTRAL DE "OÍDO COCINA" - BLOQUE 1 (ARRANQUE Y BASE DE DATOS)
 // ==========================================
-const SUPABASE_URL = 'https://lgnollotwfslicyxxjdp.supabase.co';
+const SUPABASE_URL = 'https://lgnoilucefslieyxxjdp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnbndsbG90d2ZzbGljeXh4amRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDUwMTI3MDMsImV4cCI6MjAyMTAxMjcwM30.YYWmpAQA_slA4X1UW4_nstcUVBF0r1MyxzUuDunvE6A';
 
 // La aduana o lavadora de texto para evitar inyecciones maliciosas (XSS)
