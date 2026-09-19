@@ -172,7 +172,7 @@ async function mostrarFichaRecetaUnica(id) {
     todosLosFiltros.forEach(bloque => bloque.style.display = 'none');
 
     document.getElementById('modulo-principal').style.display = 'none';
-    document.getElementById('modulo-detalle').style.style.display = 'block';
+    document.getElementById('modulo-detalle').style.display = 'block';
 
     const cajaContenido = document.getElementById('detalle-contenido');
     const listaIngredientes = Array.isArray(receta.ingredientes) ? receta.ingredientes : (typeof receta.ingredientes === 'string' ? receta.ingredientes.split(',').map(i => i.trim()) : []);
